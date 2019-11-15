@@ -1,4 +1,5 @@
 use amethyst::{
+    core::transform::TransformBundle,
     prelude::*,
     renderer::{
         plugins::{RenderFlat2D, RenderToWindow},
@@ -6,16 +7,11 @@ use amethyst::{
         RenderingBundle,
     },
     utils::application_root_dir,
-    Error,
 };
 
-pub struct Pong;
+mod pong;
 
-// SimpleState: simplified version of State
-// Implements stuff like update() and handle_event() for us.
-// Especially handling the 'exit' signal -> closing the window.
-
-impl SimpleState for Pong {}
+use crate::pong::Pong;
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
@@ -24,13 +20,15 @@ fn main() -> amethyst::Result<()> {
 
     let game_data = GameDataBuilder::default() // all game runtime logic
         .with_bundle(
+            // uses RenderPlugin trait, that uses rendy crate
             RenderingBundle::<DefaultBackend>::new()
                 .with_plugin(
                     RenderToWindow::from_config_path(display_config_path)
                         .with_clear([0.0, 0.0, 0.0, 1.0]),
                 )
                 .with_plugin(RenderFlat2D::default()),
-        )?;
+        )?
+        .with_bundle(TransformBundle::new())?; // handles tracking entity positions
 
     let assets_dir = app_root.join("assets"); // path to assets
 
