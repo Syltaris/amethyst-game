@@ -15,6 +15,7 @@ pub struct PaddleSystem;
 
 impl<'s> System<'s> for PaddleSystem {
     // data system operates on
+    // describes what kind of world resources are required to power the system
     // Mutates Transform components
     // Reads Paddle components
     // also assesses InputHandler resource
@@ -35,15 +36,16 @@ impl<'s> System<'s> for PaddleSystem {
                 Side::Left => input.axis_value("left_paddle"),
                 Side::Right => input.axis_value("right_paddle"),
             };
+            // if there is change for the paddle, apply the transform for it
             if let Some(mv_amount) = movement {
-                if mv_amount != 0.0 {
-                    let side_name = match paddle.side {
-                        Side::Left => "left",
-                        Side::Right => "right",
-                    };
-                    println!("Side {:?} moving {}", side_name, mv_amount);
-                }
-            }
+                let scaled_amount = 1.2 * mv_amount as f32;
+                let paddle_y = transform.translation().y;
+                transform.set_translation_y(
+                    (paddle_y + scaled_amount)
+                        .min(ARENA_HEIGHT - PADDLE_HEIGHT * 0.5)
+                        .max(PADDLE_HEIGHT * 0.5),
+                ); // clamps the paddle within arena boundaries
+            } // would usually use amethyse::core::timing::Time to get time diff between frames for consistency
         }
     }
 }

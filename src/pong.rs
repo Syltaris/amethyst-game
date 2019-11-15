@@ -33,7 +33,8 @@ impl SimpleState for Pong {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
         let sprite_sheet_handle = load_sprite_sheet(world);
-        world.register::<Paddle>(); // configures storage for specific entity, there's a better way to do this
+        //        world.register::<Paddle>(); // configures storage for specific entity, there's a better way to do this
+        // no longer needed since done in PaddleSystem, and registered via there
 
         initialise_paddles(world, sprite_sheet_handle);
         initialise_camera(world);
