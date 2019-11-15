@@ -32,10 +32,11 @@ fn initialise_camera(world: &mut World) {
 impl SimpleState for Pong {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
+        let sprite_sheet_handle = load_sprite_sheet(world);
         world.register::<Paddle>(); // configures storage for specific entity, there's a better way to do this
 
+        initialise_paddles(world, sprite_sheet_handle);
         initialise_camera(world);
-        initialise_paddles(world);
     }
 }
 
@@ -66,7 +67,7 @@ impl Component for Paddle {
     type Storage = DenseVecStorage<Self>; // variations for fast access, low mem usage, etc. https://slide-rs.github.io/specs/05_storages.html#densevecstorage
 }
 
-fn initialise_paddles(world: &mut World) {
+fn initialise_paddles(world: &mut World, sprite_sheet: Handle<SpriteSheet>) {
     let mut left_transform = Transform::default();
     let mut right_transform = Transform::default();
 
@@ -74,10 +75,16 @@ fn initialise_paddles(world: &mut World) {
     let y = ARENA_HEIGHT / 2.0;
     left_transform.set_translation_xyz(PADDLE_WIDTH * 0.5, y, 0.0);
     right_transform.set_translation_xyz(ARENA_WIDTH - PADDLE_WIDTH * 0.5, y, 0.0);
+    // assign sprites for paddles
+    let sprite_render = SpriteRender {
+        sprite_sheet: sprite_sheet.clone(),
+        sprite_number: 0, // first sprite index
+    };
 
     // left plank
     world
         .create_entity()
+        .with(sprite_render.clone())
         .with(Paddle::new(Side::Left))
         .with(left_transform)
         .build();
@@ -85,7 +92,36 @@ fn initialise_paddles(world: &mut World) {
     // right plank
     world
         .create_entity()
+        .with(sprite_render.clone())
         .with(Paddle::new(Side::Right))
         .with(right_transform)
         .build();
+}
+
+// returns reference, for others to lazy 'read'
+fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
+    // loads spritesheet needed for graphics
+    // texture contains pixel data
+    // 'texture_handle' is a cloneable ref to texture
+    let texture_handle = {
+        // sharable resource, loaded when app is built
+        let loader = world.read_resource::<Loader>();
+        let texture_storage = world.read_resource::<AssetStorage<Texture>>();
+        // path, type,
+        loader.load(
+            "texture/pong_spritesheet.png",
+            ImageFormat::default(),
+            (),
+            &texture_storage,
+        )
+    };
+
+    let loader = world.read_resource::<Loader>();
+    let sprite_sheet_store = world.read_resource::<AssetStorage<SpriteSheet>>();
+    loader.load(
+        "texture/pong_spritesheet.ron",
+        SpriteSheetFormat(texture_handle), // refernce to source data?
+        (),
+        &sprite_sheet_store, // place to store data in?
+    )
 }
