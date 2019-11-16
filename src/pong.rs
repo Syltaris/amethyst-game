@@ -1,6 +1,6 @@
 use amethyst::{
     assets::{AssetStorage, Handle, Loader},
-    core::transform::Transform,
+    core::{timing::Time, transform::Transform},
     ecs::prelude::{Component, DenseVecStorage},
     prelude::*,
     renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture},
@@ -17,7 +17,15 @@ pub const BALL_VELOCITY_X: f32 = 75.0;
 pub const BALL_VELOCITY_Y: f32 = 50.0;
 pub const BALL_RADIUS: f32 = 2.0;
 
-pub struct Pong;
+#[derive(Default)]
+pub struct Pong {
+    ball_spawn_timer: Option<f32>,
+    sprite_sheet_handle: Option<Handle<SpriteSheet>>,
+}
+// needs own state since, multiple mutators need to use sprite_sheet_handle
+// and also we only want the timer to be used once
+// timer will count down to 0, and then be None
+// Default allows creating default empty state
 
 fn initialise_camera(world: &mut World) {
     let mut transform = Transform::default();
@@ -36,14 +44,36 @@ fn initialise_camera(world: &mut World) {
 impl SimpleState for Pong {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
-        let sprite_sheet_handle = load_sprite_sheet(world);
+        // let sprite_sheet_handle = load_sprite_sheet(world);
         //        world.register::<Paddle>(); // configures storage for specific entity, there's a better way to do this
         // no longer needed since done in PaddleSystem, and registered via there
         // world.register::<Ball>();
+        // initialise_ball(world, sprite_sheet_handle.clone());
 
-        initialise_ball(world, sprite_sheet_handle.clone());
-        initialise_paddles(world, sprite_sheet_handle);
+        // wait 1 second before spawning ball
+        self.ball_spawn_timer.replace(1.0);
+        // shared loader
+        self.sprite_sheet_handle.replace(load_sprite_sheet(world));
+        initialise_paddles(world, self.sprite_sheet_handle.clone().unwrap()); // need to unwrap the option
         initialise_camera(world);
+    }
+
+    fn update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
+        if let Some(mut timer) = self.ball_spawn_timer.take() {
+            /* .pop() */
+            {
+                let time = data.world.fetch::<Time>(); // fetch... implied time object?
+                timer -= time.delta_seconds();
+            }
+            if timer <= 0.0 {
+                // when timer hits zero
+                initialise_ball(data.world, self.sprite_sheet_handle.clone().unwrap());
+            } else {
+                // if not expired yet, push() it back in
+                self.ball_spawn_timer.replace(timer);
+            }
+        }
+        Trans::None // this allows transitioning out of state (for now its None)
     }
 }
 

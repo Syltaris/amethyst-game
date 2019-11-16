@@ -46,8 +46,8 @@ fn main() -> amethyst::Result<()> {
             &["ball_system"],
         );
     let mut world = World::new();
-    let mut game = Application::new(assets_dir, Pong, game_data)?; // connect (path_to_assets, State, GameDataBuilder )
-                                                                   // binds OS event loop, state machines, timers, other core components together
+    let mut game = Application::new(assets_dir, Pong::default(), game_data)?; // connect (path_to_assets, State, GameDataBuilder )
+                                                                              // binds OS event loop, state machines, timers, other core components together
 
     game.run(); // simply start loop, until State returns Trans::Quit, or all states popped off State
     Ok(())
