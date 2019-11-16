@@ -1,11 +1,14 @@
 use amethyst::{
     assets::{AssetStorage, Handle, Loader},
+    audio::AudioBundle,
     core::{timing::Time, transform::Transform},
     ecs::prelude::{Component, DenseVecStorage, Entity},
     prelude::*,
     renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture},
     ui::{Anchor, TtfFormat, UiText, UiTransform},
 };
+
+use crate::audio::initialise_audio;
 
 // dimensions of playable area
 pub const ARENA_HEIGHT: f32 = 100.0;
@@ -122,6 +125,7 @@ impl SimpleState for Pong {
         initialise_paddles(world, self.sprite_sheet_handle.clone().unwrap()); // need to unwrap the option
         initialise_camera(world);
         initialise_scoreboard(world);
+        initialise_audio(world);
     }
 
     fn update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
