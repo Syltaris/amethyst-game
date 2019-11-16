@@ -38,8 +38,13 @@ fn main() -> amethyst::Result<()> {
         )?
         .with_bundle(TransformBundle::new())?
         .with_bundle(input_bundle)? // handles tracking entity positions
-        .with(systems::PaddleSystem, "paddle_system", &["input_system"]); // adding a system alone, not bundle, params are dependencies to run before this
-
+        .with(systems::PaddleSystem, "paddle_system", &["input_system"]) // adding a system alone, not bundle, params are dependencies to run before this
+        .with(systems::move_balls::MoveBallsSystem, "ball_system", &[])
+        .with(
+            systems::bounce::BounceSystem,
+            "collision_system",
+            &["ball_system"],
+        );
     let mut world = World::new();
     let mut game = Application::new(assets_dir, Pong, game_data)?; // connect (path_to_assets, State, GameDataBuilder )
                                                                    // binds OS event loop, state machines, timers, other core components together

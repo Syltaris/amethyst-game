@@ -39,7 +39,7 @@ impl SimpleState for Pong {
         let sprite_sheet_handle = load_sprite_sheet(world);
         //        world.register::<Paddle>(); // configures storage for specific entity, there's a better way to do this
         // no longer needed since done in PaddleSystem, and registered via there
-        world.register::<Ball>();
+        // world.register::<Ball>();
 
         initialise_ball(world, sprite_sheet_handle.clone());
         initialise_paddles(world, sprite_sheet_handle);

@@ -8,6 +8,9 @@ use amethyst::{
 // import some stuff from pong
 use crate::pong::{Paddle, Side, ARENA_HEIGHT, PADDLE_HEIGHT};
 
+pub mod bounce;
+pub mod move_balls;
+
 // System Descriptor unit struct
 // Systems must have SystemDesc trait to specify logic for System instantiation
 #[derive(SystemDesc)]
