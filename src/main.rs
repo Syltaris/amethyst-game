@@ -1,5 +1,5 @@
 use amethyst::{
-    audio::AudioBundle,
+    audio::{AudioBundle, DjSystem},
     core::transform::TransformBundle,
     input::{InputBundle, StringBindings},
     prelude::*,
@@ -16,6 +16,7 @@ mod audio;
 mod pong;
 mod systems;
 
+use crate::audio::Music;
 use crate::pong::Pong;
 
 fn main() -> amethyst::Result<()> {
@@ -44,6 +45,11 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(input_bundle)? // handles tracking entity positions
         .with_bundle(UiBundle::<StringBindings>::new())?
         .with_bundle(AudioBundle::default())?
+        .with(
+            DjSystem::new(|music: &mut Music| music.music.next()),
+            "dj_system",
+            &[],
+        )
         .with(systems::PaddleSystem, "paddle_system", &["input_system"]) // adding a system alone, not bundle, params are dependencies to run before this
         .with(systems::MoveBallsSystem, "ball_system", &[])
         .with(systems::BounceSystem, "collision_system", &["ball_system"])
