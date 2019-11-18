@@ -1,5 +1,5 @@
 use amethyst::{
-    audio::{AudioBundle, DjSystem},
+    audio::{AudioBundle, DjSystemDesc},
     core::transform::TransformBundle,
     input::{InputBundle, StringBindings},
     prelude::*,
@@ -45,8 +45,8 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(input_bundle)? // handles tracking entity positions
         .with_bundle(UiBundle::<StringBindings>::new())?
         .with_bundle(AudioBundle::default())?
-        .with(
-            DjSystem::new(|music: &mut Music| music.music.next()),
+        .with_system_desc(
+            DjSystemDesc::new(|music: &mut Music| music.music.next()),
             "dj_system",
             &[],
         )
